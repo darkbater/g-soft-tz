@@ -2,12 +2,31 @@
 $config = include "{$_SERVER['DOCUMENT_ROOT']}/config.php";
 include "app.php";
 $app = new app($config);
-if (session_status() != PHP_SESSION_ACTIVE) {
-	session_start([
-			'cookie_lifetime' => 86400,
-			'read_and_close'  => true,
-			]);
-	} else die("Sessions not supported");
+
+/**
+ * Отладка
+ */
+echo "<br><pre>";
+print_r($_POST);
+print_r($_SESSION);
+echo "</pre>";
+
+// Если пришел запрос на выход
+if(isset($_POST['exit'])){
+	$app->exit();
+}
+
+// Если пришла форма авторизации
+if(isset($_POST['auth'])){
+	$app->auth();
+	}
+// Проверка "авторизованности"
+if(!isset($_SESSION['type'])){
+	// Если нет - выводим форму авторизации
+	$app->auth_form();
+	} else { // Если да - кнопку выхода
+	$app->exit_form();
+	}
 
 
 
@@ -21,12 +40,6 @@ if (session_status() != PHP_SESSION_ACTIVE) {
  * 
  */
 
-// Проверка "авторизованности"
-if(@$_SESSION['auth'] !== true){
-	// Если не авторизованы - тогда даём выбрать вариант авторизации пользователя или менеджера
-	// -- выбор:
-	
-	}
 
 switch (true) {
 	case @$_SERVER['page'] == 'new':
@@ -37,5 +50,6 @@ switch (true) {
 		break;
 	default:
 		# Основная страница
+		
 		break;
  }
