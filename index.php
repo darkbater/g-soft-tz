@@ -6,10 +6,10 @@ $app = new app($config);
 /**
  * Отладка
  */
-echo "<br><pre>";
-print_r($_POST);
-print_r($_SESSION);
-echo "</pre>";
+// echo "<br><pre>";
+// print_r($_POST);
+// print_r($_SESSION);
+// echo "</pre>";
 
 // Если пришел запрос на выход
 if(isset($_POST['exit'])){
@@ -28,7 +28,9 @@ if(!isset($_SESSION['type'])){
 	$app->exit_form();
 	}
 
-
+if(isset($_POST['cargo'])){
+	$app->new_cargo();
+	}
 
 /**
  * Проверяем авторизованы ли.
@@ -40,16 +42,28 @@ if(!isset($_SESSION['type'])){
  * 
  */
 
-
-switch (true) {
-	case @$_SERVER['page'] == 'new':
+// echo $_
+// print_r($_GET);
+// Коммутатор страниц
+switch (@$_GET['page']) {
+	// Страница добавления груза клиентом
+	case 'add':
 		# code...
+		echo "Страница добавления заказа<br>";
+		$app->new_cargo_page();
 		break;
-	case @$_SERVER['page'] == 'edit':
+	// Страница приёма груза менеджером
+	case 'apply':
 		# code...
+		echo "Страница новых зявок<br>";
+		$app->apply_cargo_page();
 		break;
 	default:
+		echo "aaa";
 		# Основная страница
+		// Если не выбрана служебная страница - выводим основную таблицу приложения
 		
+		$app->main();
 		break;
- }
+	}
+ echo "bbb";

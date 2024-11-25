@@ -1,10 +1,49 @@
-<?php
+	<?php
 class app{
 	/**
 	 * Получение главной страницы пользователя
 	 */
 	function main(){
-	
+
+		// Если это клиент - подключаем страницу добавления заказа
+		if($_SESSION['type'] === 'client'){
+			echo "<br><a href='?page=add'>Добавить заказ</a><br>";
+			// $res = $this->db->query("select * from `cargo`;");
+			$res = $this->db->query("select * from `cargo` where `client_id`={$_SESSION['id']};");
+			}
+
+		if($_SESSION['type'] === 'manager'){
+			echo "<br><a href='?page=apply'>Новые грузы</a><br>";
+			$res = $this->db->query("select * from `cargo` where `manager_id`={$_SESSION['id']};");
+		
+			}
+
+		$table = "<table><tbody>";
+		while($row = $res->fetch_assoc()){
+			if(!isset($row['manager']))$row['manager'] = 'Не назначен';
+			switch ($row['status']) {
+			case 0:
+				$row['status']='awaiting';
+				break;
+			case 1:
+				$row['status']='on board';
+				break;
+			case 2:
+				$row['status']='finished';
+				break;
+			}
+			$table .= "<tr>
+			<td>{$row['id']}
+			<td>{$row['container']}
+			<td>{$row['manager']}
+			<td>{$row['status']}
+			<td>{$row['date_arrival']}
+			</tr>";
+			}
+
+
+		$table .= "</tbody></table>";
+		die($table);
 	}
 	/**
 	 * Получение информации о клиенте
@@ -18,9 +57,61 @@ class app{
     
 		}
 	/**
+	 * Создание заявки
+	 */
+	function new_cargo(){
+		$this->db->query("insert into `cargo`(`container`,`client_id`)
+								values('{$_POST['cargo']}', '{$_SESSION['id']}')");
+		header('Location:/');
+		// die();
+		}
+	/**
+	 * Страница приёма заявок
+	 */
+	function apply_cargo_page(){
+		
+
+
+		$res = $this->db->query("select * from `cargo` where ISNULL(`manager_id`);");
+		
+		$table = "<table><tbody>";
+		while($row = $res->fetch_assoc()){
+			if(!isset($row['manager']))$row['manager'] = 'Не назначен';
+			switch ($row['status']) {
+			case 0:
+				$row['status']='awaiting';
+				break;
+			case 1:
+				$row['status']='on board';
+				break;
+			case 2:
+				$row['status']='finished';
+				break;
+			}
+			$table .= "<tr>
+			<td>{$row['id']}
+			<td>{$row['container']}
+			<td>{$row['manager']}
+			<td>{$row['status']}
+			<td>{$row['date_arrival']}
+			</tr>";
+			}
+
+
+
+		die($table);
+		}
+	/**
 	 * Страница создания заявки
 	 */
 	function new_cargo_page(){
+		echo "<form method=post name=new_cargo action='/'>";
+		echo "<input name=cargo placeholder='Конейнер' required>";
+		echo "<input type='submit'>";
+		echo "</form>";
+
+
+		die();
 		}
 	/**
 	 * Страница редактирования заявки
@@ -66,8 +157,10 @@ class app{
 	function auth_form(){
 		echo "Требуется авторизация<br>";
 		echo "<form method=post name=auth>";
+		echo "Для клиента:";
 		$this->clients_list();
 		echo "<br>";
+		echo "Для менеджера:";
 		$this->managers_list();
 		echo "<br>";
 		echo "<input type='submit' name=auth>";
